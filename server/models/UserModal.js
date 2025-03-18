@@ -1,4 +1,5 @@
 const { genSalt } = require("bcrypt");
+const bcrypt = require("bcrypt");
 const { default: mongoose } = require("mongoose");
 
 
@@ -36,7 +37,7 @@ const userSchema =new mongoose.Schema({
 
 userSchema.pre("save",async function(next){
     const salt = await genSalt();
-    this.password = await hash(this.password,salt);
+    this.password = await bcrypt.hash(this.password,salt);
     next();
 })
 

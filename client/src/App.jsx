@@ -1,21 +1,65 @@
-import { useState } from 'react'
+import { Children, useEffect, useState } from 'react'
 import './App.css'
 import { Button } from './components/ui/button'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Auth from './pages/auth'
 import Chat from './pages/chat'
 import Profile from './pages/profile'
+import { useAppStore } from './store'
+import { apiClient } from './lib/api-client'
+import { GET_USER_INFO } from './utils/constants'
+
+  const privateRoute = ({Children}) => {
+    const {userInfo} = useAppStore();
+    const isAuthenticated = !userInfo;
+    return isAuthenticated ? children : <Navigate to="/auth"/>
+  }
+
+  const AuthRoute = ({Children}) => {
+    const {userInfo} = useAppStore();
+    const isAuthenticated = !userInfo;
+    return isAuthenticated ? <Navigate to="/auth"/> : children
+  }
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const {userInfo,setUserInfo} = useAppStore();
+
+  useEffect(() => {
+      const getUserData = async () => {
+          try{
+            const response = await apiClient.get(GET_USER_INFO,{withCredentials:true});
+            console.log(response);
+          }
+          catch(e){
+            console.log(e);
+          }
+      }
+      if(!userInfo){
+        getUserData();
+      }
+      else{
+        setLoading(false)
+      }
+  },[userInfo,setUserInfo])
+
+  if(loading){
+    return <div>Loading...</div>
+  }
 
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path='/auth' element={<Auth/>}/>
-          <Route path='/chat' element={<Chat/>}/>
-          <Route path='/profile' element={<Profile/>}/>
+          <Route path='/auth' element={<AuthRoute>
+            <Auth/>
+          </AuthRoute>}/>
+          <Route path='/chat' element={<privateRoute>
+            <Chat/>
+          </privateRoute>}/>
+          <Route path='/profile' element={<privateRoute>
+           <Profile/>
+          </privateRoute>}/>
           
           <Route path='*' element={<Navigate to={"/auth"}/>}/>
         </Routes>

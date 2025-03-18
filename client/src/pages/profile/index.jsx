@@ -1,8 +1,16 @@
+import { useAppStore } from '@/store'
 import React from 'react'
 
 const Profile = () => {
+
+  const {userInfo} = useAppStore();
+  
+
   return (
-    <div>Profile</div>
+    <div>Profile
+      <br/>
+      <div>Email : {userInfo.email}</div>
+    </div>
   )
 }
 
