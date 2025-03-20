@@ -98,7 +98,27 @@ exports.login = async (req,res) => {
 exports.getUserInfo = async (req,res) => {
     try{
         
-      
+        const userData = await User.findById(req.userId);
+        if(!userData){
+            return res.status(404).json({
+                success : false,
+                message : "User not found"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"User Created Successfully",
+           
+                id:userData.id, 
+                email:userData.email,
+                profileSetup : userData.profileSetup,
+                firstName:userData.firstName,
+                lastName : userData.lastName,
+                image : userData.image,
+                color:userData.color,
+             
+        })   
+
     }
     catch(e){
         console.log(e.message);
