@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const {renameSync,unlinkSync} = require('fs')
+const fs = require("fs");
 
 const User = require("../models/UserModal.js");
 const { compare } = require("bcrypt");
@@ -168,27 +170,23 @@ exports.updateProfile = async (req, res) => {
 exports.addProfileImage = async (req,res) => {
   try {
       if(!req.file){
-        return req.status(403).json({
+        return res.status(403).json({
           success : false,
           message : "File missing"
         }) 
       }
-      const data = Date.now();
-      let fileName = "uploads/profiles"
+      const date = Date.now();
+      let fileName = "uploads/profiles/"+date+req.file.originalname;
+      renameSync(req.file.path,fileName);
+      const updatedUser = await User.findByIdAndUpdate(req.userId,{image:fileName},{new:true,runValidators:true});
 
 
 
     return res.status(200).json({
       success: true,
-      message: "User Created Successfully",
+      message: "image added Successfully",
 
-      id: userData.id,
-      email: userData.email,
-      profileSetup: userData.profileSetup,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      image: userData.image,
-      color: userData.color,
+      image: updatedUser.image,
     });
   } catch (e) {
     console.log(e);
@@ -199,6 +197,30 @@ exports.addProfileImage = async (req,res) => {
   }
 }
 
-exports.removeProfileImage = async (req,res) => {
+exports.removeProfileImage = async (req, res) => {
+  try {
+    console.log("🔹 Inside removeProfileImage");
+    console.log("🔹 User ID from request:", req.userId); // Debugging log
 
-}
+    if (!req.userId) {
+      return res.status(400).json({ success: false, message: "User ID is missing from request" });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.image) {
+      fs.unlinkSync(user.image); // Ensure the path is valid
+    }
+
+    user.image = null;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Image removed" });
+  } catch (error) {
+    console.error("❌ Error in removeProfileImage:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
