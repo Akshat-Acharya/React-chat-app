@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/AuthRoutes.js');
+const contactRoutes = require('./routes/ContactRoutes.js')
 
 dotenv.config(); 
 
@@ -24,6 +25,7 @@ const databaseURL = process.env.DATABASE_URL;
     app.use(express.json());
 
     app.use('/api/auth',authRoutes)
+    app.use('/api/contacts',contactRoutes)
 
 const server = app.listen(port,() => {
     console.log("Server sttarted at port : ",port);
