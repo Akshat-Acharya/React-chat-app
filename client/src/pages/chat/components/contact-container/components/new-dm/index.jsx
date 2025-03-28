@@ -20,11 +20,13 @@ import { apiClient } from "@/lib/api-client";
 import { SEARCH_CONTACT_ROUTES } from "@/utils/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { useAppStore } from "@/store";
 
 const NewDM = () => {
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSeachedContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); // Track search term
+  const {setSelectedChatType,setSelectedChatData} = useAppStore()
 
   const searchContacts = async (term) => {
     setSearchTerm(term); // Update state on input change
@@ -48,6 +50,13 @@ const NewDM = () => {
       setSeachedContacts([]);
     }
   };
+
+  const selectNewContact = (contact) => {
+        setOpenNewContactModal(false);
+        setSelectedChatType("contact");
+        setSelectedChatData(contact)
+        setSeachedContacts([]);
+  }
 
   return (
     <>
@@ -85,6 +94,7 @@ const NewDM = () => {
                 <div
                   key={contact._id}
                   className="flex gap-3 items-center cursor-pointer "
+                  onClick={() => selectNewContact(contact)}
                 >
                   <div className="w-12 h-12 relative ">
                     <Avatar className="h-12 w-12 rounded-full overflow-hidden">
@@ -123,12 +133,12 @@ const NewDM = () => {
          
           {searchedContacts.length === 0 && searchTerm.length === 0 && (
             <div
-              className="flex-1 md:bg-[#1c1d25] md:flex flex-col justify-center items-center duration-1000 transition-all"
+              className="flex-1 md:flex flex-col justify-center items-center duration-1000 transition-all"
             >
               <Lottie
                 isClickToPauseDisabled={true}
-                height={100}
-                width={100}
+                height={200}
+                width={200}
                 options={animationDefaultOptions}
               />
               <h1 className="poppins-medium">
