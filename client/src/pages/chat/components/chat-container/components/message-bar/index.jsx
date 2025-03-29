@@ -1,4 +1,6 @@
 
+import { useAppStore } from "@/store"
+import { useSocket } from "../../../../../../../Context/SocketContext"
 import EmojiPicker from "emoji-picker-react"
 import { useEffect, useRef, useState } from "react"
 import {GrAttachment} from 'react-icons/gr'
@@ -7,8 +9,10 @@ import { RiEmojiStickerLine } from "react-icons/ri"
 
 const MessageBar = () => {
     const emojiRef = useRef();
+    const {selectedChatType,selectedChatData,userInfo} = useAppStore()
     const [message, setMessage] = useState("");
     const [emojiPickerOpen, setemojiPickerOpen] = useState(false)
+    const socket = useSocket();
 
     useEffect(() => {
         function handleClickOutside(event){
@@ -26,9 +30,37 @@ const MessageBar = () => {
             setMessage((msg) => msg+emoji.emoji)
     }
 
-    const handleSendMessage = async() => {
-
-    }
+    const handleSendMessage = async () => {
+        if (!message.trim()) return; // Avoid sending empty messages
+    
+        console.log("🟢 Selected Chat Data:", selectedChatData); // Debugging log
+    
+        if (selectedChatType === "contact" && selectedChatData?._id) { // ✅ Use _id instead of id
+            const messageData = {
+                sender: userInfo.id,
+                recipient: selectedChatData._id, // ✅ Use _id
+                content: message,
+                messageType: "text",
+                fileUrl: undefined
+            };
+    
+            console.log("📤 Sending message:", messageData); // Debugging log
+    
+            if (!socket) {
+                console.error("❌ Socket is not connected!");
+                return;
+            }
+    
+            socket.emit("sendMessage", messageData);
+            setMessage(""); // Clear input
+        } else {
+            console.error("❌ `selectedChatData._id` is undefined!");
+        }
+    };
+    
+    
+    
+    
 
   return (
     <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">

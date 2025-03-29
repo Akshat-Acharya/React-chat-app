@@ -22,22 +22,43 @@ const setupSocket = (server) => {
   };
 
   const sendMessage = async (message) => {
-    const senderSocketId = userSocketMap.get(message.sender);
-    const recipientSocketId = userSocketMap.get(message.recipient);
-
-    const createMessage = await Message.create(message);
-
-    const messageData = await Message.findById(createMessage._id)
-      .populate("sender", "id email firstName lastName image color")
-      .populate("recipient", "id email firstName lastName image color");
-
-      if(recipientSocketId){
-        io.to(recipientSocketId).emit("recieveMessage",messageData);
+    try {
+      const senderSocketId = userSocketMap.get(message.sender);
+      const recipientSocketId = userSocketMap.get(message.recipient);
+  
+      console.log("Raw message received:", message);
+  
+      // Save message to database
+      const createMessage = await Message.create(message);
+  
+      // Fetch the message with sender and recipient populated
+      const messageData = await Message.findById(createMessage._id)
+        .populate("sender", "id email firstName lastName image color")
+        .populate("recipient", "id email firstName lastName image color");
+  
+      console.log("Populated message:", messageData);
+  
+      // Ensure recipient is correctly populated before emitting
+      if (!messageData.recipient) {
+        console.warn("Recipient is missing in the populated message", messageData);
       }
-      if(senderSocketId){
-        io.to(senderSocketId).emit("recieveMessage",messageData);
+  
+      // Send to recipient if online
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit("recieveMessage", messageData);
+        console.log(`Message sent to recipient: ${recipientSocketId}`);
       }
+  
+      // Send to sender
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("recieveMessage", messageData);
+        console.log(`Message sent to sender: ${senderSocketId}`);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
+  
 
   io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
