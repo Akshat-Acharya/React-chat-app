@@ -11,7 +11,13 @@ import { UPLOAD_FILE_ROUTE } from "@/utils/constants";
 const MessageBar = () => {
   const emojiRef = useRef();
   const fileInputRef = useRef();
-  const { selectedChatType, selectedChatData, userInfo } = useAppStore();
+  const {
+    selectedChatType,
+    selectedChatData,
+    userInfo,
+    setIsUploading,
+    setFileUploadProgress,
+  } = useAppStore();
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setemojiPickerOpen] = useState(false);
   const socket = useSocket();
@@ -70,25 +76,30 @@ const MessageBar = () => {
     try {
       const file = event.target.files[0];
       console.log("📂 Selected File:", file);
-  
+
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
+        setIsUploading(true);
         formData.append("sender", userInfo.id); // ✅ Send sender ID
         formData.append("recipient", selectedChatData._id); // ✅ Send recipient ID
-  
+
         console.log("📤 Uploading file...");
-  
+
         const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
           withCredentials: true,
+          onUploadProgress:data =>{
+              setFileUploadProgress(Math.round((100*data.loaded)/data.total));
+          },  
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-  
+
         if (response.status === 200 && response.data) {
+          setIsUploading(false)
           console.log("✅ File uploaded successfully:", response.data);
-  
+
           // ✅ Send message with fileUrl
           socket.emit("sendMessage", {
             sender: userInfo.id,
@@ -100,10 +111,10 @@ const MessageBar = () => {
         }
       }
     } catch (e) {
+      setIsUploading(false)
       console.error("❌ Error in file upload:", e);
     }
   };
-  
 
   return (
     <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">

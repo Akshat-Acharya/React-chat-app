@@ -39,7 +39,6 @@ exports.searchContacts = async (req, res) => {
   }
 };
 
-
 exports.getContactForDMList = async (req, res) => {
   try {
     console.log("🔹 Request received for getContactForDMList");
@@ -49,12 +48,16 @@ exports.getContactForDMList = async (req, res) => {
 
     if (!userId) {
       console.log("❌ UserId is missing");
-      return res.status(400).json({ success: false, message: "User ID is missing" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is missing" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       console.log("❌ Invalid UserId format:", userId);
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
     }
 
     userId = new mongoose.Types.ObjectId(userId);
@@ -128,3 +131,26 @@ exports.getContactForDMList = async (req, res) => {
   }
 };
 
+exports.getAllContacts = async (req, res) => {
+  try {
+    const users = await User.find(
+      { _id: { $ne: req.userId } },
+      "firstName lastName _id"
+    );
+    const contacts = users.map((user) => ({
+      label: user.firstName?`${user.firstName} ${user.lastName}`:user.email,
+      value: user._id
+    }))
+
+    return res.status(200).json({
+      success: true,
+      message: "Contacts fetched",
+      contacts
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Cannot fetch the contacts",
+    });
+  }
+};
