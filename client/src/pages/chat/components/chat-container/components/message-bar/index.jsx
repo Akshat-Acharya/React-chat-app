@@ -61,9 +61,18 @@ const MessageBar = () => {
 
       socket.emit("sendMessage", messageData);
       setMessage(""); // Clear input
+    } else if (selectedChatType === "channel") {
+      socket.emit("send-channel-message", {
+        sender: userInfo.id,
+        content: message,
+        messageType: "text",
+        fileURL: undefined,
+        channelId: selectedChatData._id,
+      });
     } else {
       console.error("❌ `selectedChatData._id` is undefined!");
     }
+    setMessage("");
   };
 
   const handleAttachmentClick = () => {
@@ -88,16 +97,16 @@ const MessageBar = () => {
 
         const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
           withCredentials: true,
-          onUploadProgress:data =>{
-              setFileUploadProgress(Math.round((100*data.loaded)/data.total));
-          },  
+          onUploadProgress: (data) => {
+            setFileUploadProgress(Math.round((100 * data.loaded) / data.total));
+          },
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
         if (response.status === 200 && response.data) {
-          setIsUploading(false)
+          setIsUploading(false);
           console.log("✅ File uploaded successfully:", response.data);
 
           // ✅ Send message with fileUrl
@@ -109,9 +118,18 @@ const MessageBar = () => {
             fileURL: response.data.filePath,
           });
         }
+        else if(selectedChatType === 'channel'){
+          socket.emit("send-channel-message",{
+            sender: userInfo.id,
+            content: undefined,
+            messageType: "file",
+            fileURL: response.data.filePath,
+            channelId : selectedChatData._id
+          })
+        }
       }
     } catch (e) {
-      setIsUploading(false)
+      setIsUploading(false);
       console.error("❌ Error in file upload:", e);
     }
   };

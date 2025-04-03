@@ -51,19 +51,35 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
-      const { selectedChatData, selectedChatType, addMessage } =
+      const { selectedChatData, selectedChatType, addMessage,addContactsInDMContacts } =
         useAppStore.getState();
 
       if (
         selectedChatType !== undefined &&
-        (selectedChatData._id === senderId || selectedChatData._id === recipientId)
+        (selectedChatData._id === senderId ||
+          selectedChatData._id === recipientId)
       ) {
         console.log("Message received:", message);
         addMessage(message);
       }
+      addContactsInDMContacts(message);
+    };
+
+    const handleRecieveChannelMessage = (message) => {
+      const { selectedChatData, selectedChatType, addMessage,addChannelInChannelList } =
+        useAppStore.getState();
+
+      if (
+        selectedChatType !== undefined &&
+        selectedChatData._id === message.channelId
+      ) {
+        addMessage(message);
+      }
+      addChannelInChannelList(message);
     };
 
     newSocket.on("recieveMessage", handleReceiveMessage);
+    newSocket.on("recieve-channel-message", handleRecieveChannelMessage);
 
     return () => {
       newSocket.off("recieveMessage", handleReceiveMessage);
@@ -71,5 +87,7 @@ export const SocketProvider = ({ children }) => {
     };
   }, [userInfo]);
 
-  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
+  );
 };

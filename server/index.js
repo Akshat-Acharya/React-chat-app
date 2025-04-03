@@ -7,6 +7,7 @@ const authRoutes = require('./routes/AuthRoutes.js');
 const contactRoutes = require('./routes/ContactRoutes.js');
 const setupSocket = require('./socket.js');
 const messageRoutes = require('./routes/MessagesRoutes.js');
+const channelRoutes = require('./routes/ChannelRoutes.js');
 
 dotenv.config(); 
 
@@ -30,6 +31,7 @@ const databaseURL = process.env.DATABASE_URL;
     app.use('/api/auth',authRoutes)
     app.use('/api/contacts',contactRoutes)
     app.use('/api/messages',messageRoutes)
+    app.use('/api/channel',channelRoutes);
 
 const server = app.listen(port,() => {
     console.log("Server sttarted at port : ",port);

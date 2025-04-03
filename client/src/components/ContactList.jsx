@@ -15,7 +15,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
   const handleClick = (contact) => {
     setSelectedChatType(isChannel ? "channel" : "contact");
     setSelectedChatData(contact);
-    if (selectedChatData && selectedChatData._id !== contact._id) {
+    if (selectedChatData?._id !== contact._id) {
       setSelectedChatMessages([]);
     }
   };
@@ -27,7 +27,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
           key={contact._id}
           className={`pl-10 py-2 transition-all duration-300 cursor-pointer 
             ${
-              selectedChatData && selectedChatData._id === contact._id
+              selectedChatData?._id === contact._id
                 ? "bg-[#8417ff] hover:bg-[#8417ff]"
                 : "hover:bg-[#f1f1f111]"
             }`}
@@ -44,16 +44,14 @@ const ContactList = ({ contacts, isChannel = false }) => {
                   />
                 ) : (
                   <div
-                    className={`${
-                      selectedChatData && selectedChatData._id === contact._id
-                        ? "bg-[#ffffff22] border border-white/70 "
-                        : getColor(contact.color)
-                    }
-                    uppercase h-10 w-10 text-lg border flex items-center justify-center rounded-full}`}
+                    className={`uppercase h-10 w-10 text-lg border flex items-center justify-center rounded-full 
+                      ${
+                        selectedChatData?._id === contact._id
+                          ? "bg-[#ffffff22] border border-white/70"
+                          : getColor(contact.color)
+                      }`}
                   >
-                    {contact.firstName
-                      ? contact.firstName.charAt(0)
-                      : contact.email.charAt(0)}
+                    {contact.firstName?.charAt(0) || contact.email?.charAt(0)}
                   </div>
                 )}
               </Avatar>
