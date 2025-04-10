@@ -27,12 +27,6 @@ A real-time chat application built with the **MERN stack** (MongoDB, Express, Re
 - JWT for Auth  
 - bcrypt for Password Hashing  
 
-## 📸 Screenshots
-
-| Login | Chat |
-|-------|------|
-| ![Login](./screenshots/login.png) | ![Chat](./screenshots/chat.png) |
-
 ## 📦 Installation
 
 ### 1. Clone the repo
