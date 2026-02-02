@@ -31,7 +31,7 @@ const databaseURL = process.env.DATABASE_URL;
     app.use('/api/auth',authRoutes)
     app.use('/api/contacts',contactRoutes)
     app.use('/api/messages',messageRoutes)
-    app.use('/api/channel',channelRoutes);
+    app.use('/api/channel',channelRoutes); 
 
 const server = app.listen(port,() => {
     console.log("Server sttarted at port : ",port);
